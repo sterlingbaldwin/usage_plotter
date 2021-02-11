@@ -40,8 +40,27 @@ REALMS = ['ocean', 'atmos', 'land', 'sea-ice']
 DATA_TYPES = ['time-series', 'climo', 'model-output', 'mapping', 'restart']
 
 
-def plot_cmip6(datasets):
-    ...
+def plot_e3sm_project(datasets):
+    import matplotlib
+    import matplotlib.pyplot as plt
+    # %matplotlib inline
+    plt.style.use('ggplot')
+    
+    keys = sorted(list(datasets.keys()))
+    x_pos = [i for i, _ in enumerate(keys)]
+    values = []
+    for key in keys:
+        values.append(datasets[key]['requests'])
+    
+    plt.bar(x_pos, values, width=0.35)
+    
+    key_names = [f"{k}:{v}" for k, v in keys]
+    plt.xticks(x_pos, key_names, rotation = 30, ha='right')
+
+    fig = matplotlib.pyplot.gcf()
+    fig.set_size_inches(18.5, 10.5)
+    
+    plt.show()
 
 def main():
     parsed_args = parse_args()
@@ -81,26 +100,16 @@ def main():
                     datasets[(realm, data_type)][tag] += 1
                 
             except Exception as e:
-                print(e)
-                import ipdb; ipdb.set_trace()
-                ...
-                
-
-
-            # if datasets.get(dataset_id) is None:
-            #     datasets[dataset_id] = {
-            #         requester: 1
-            #     }
-            # else:
-            #     if requester not in datasets[dataset_id].keys():
-            #         datasets[dataset_id][requester] = 1
-            #     else:
-            #         datasets[dataset_id][requester] += 1
-                
+                pass
+                # print(e)
+                # import ipdb; ipdb.set_trace()
+                # ...
     
     
-    import ipdb; ipdb.set_trace()
-    pprint(datasets)
+    # import ipdb; ipdb.set_trace()
+    # pprint(datasets)
+    plot_e3sm_project(datasets)
+
 
     return 0
 
