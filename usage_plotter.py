@@ -140,15 +140,16 @@ def plot_requests_by_month(df: pd.DataFrame, project: str) -> pd.DataFrame:
     for year in years:
         df_agg_yr = df_agg.loc[df_agg["year"] == year]
         plot = df_agg_yr.plot(
-            title=f"{project} requests by Month ({year})",
+            title=f"{project} Requests by Month ({year})",
             kind="bar",
             x="month",
             y=["count"],
             legend=None,
         )
         plot.set(xlabel="Month", ylabel="Requests")
-        plot.get_figure().savefig(f"e3sm_requests_by_month_{year}.png")
         plt.show()
+        fig = plot.get_figure()
+        fig.savefig(f"e3sm_requests_by_month_{year}", dpi=fig.dpi, facecolor="w")
 
     return df_agg
 
