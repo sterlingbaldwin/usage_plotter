@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from ipwhois import IPWhois, exceptions
 from tqdm import tqdm
@@ -43,16 +44,16 @@ def filter_lines(path: str):
     :return:
     """
     with open(path, "r") as instream:
-        while (line := instream.readline()):
+        while (line := instream.readline()) :
             if (
-                    "E3SM" in line
-                    and "CMIP6" not in line
-                    and "xml" not in line
-                    and "ico" not in line
-                    and "cmip6_variables" not in line
-                    and "html" not in line
-                    and "catalog" not in line
-                    and "aggregation" not in line
+                "E3SM" in line
+                and "CMIP6" not in line
+                and "xml" not in line
+                and "ico" not in line
+                and "cmip6_variables" not in line
+                and "html" not in line
+                and "catalog" not in line
+                and "aggregation" not in line
             ):
                 yield line
 
@@ -82,12 +83,12 @@ def parse_dataset_id(dataset_id: str):
 def parse_timestamp(timestamp: str, log_row: Dict[str, Any]) -> Dict[str, Any]:
     """Extract string date ('30/Aug/2019') and convert to date object ('2019-08-30').
 
-    :param timestamp: 
-    :param log_row: 
-    :return: 
+    :param timestamp:
+    :param log_row:
+    :return:
     """
 
-    timestamp_str = timestamp[timestamp.find("[") + 1: timestamp.find(":")]
+    timestamp_str = timestamp[timestamp.find("[") + 1 : timestamp.find(":")]
     log_row["date"] = datetime.strptime(
         timestamp_str, "%d/%b/%Y",
     ).date()  # type: datetime.date
@@ -132,18 +133,22 @@ def parse_log_line(log_line: str):
     return log_row
 
 
-def plot_downloads_by_month(df: pd.DataFrame, project: str) -> pd.DataFrame:
+def plot_requests_by_month(df: pd.DataFrame, project: str) -> pd.DataFrame:
     df_agg = df.groupby(by=["year", "month"]).size().reset_index(name="count")
     years = df_agg["year"].unique()
+
     for year in years:
         df_agg_yr = df_agg.loc[df_agg["year"] == year]
-        df_agg_yr.plot(
-            title=f"{project} Downloads by Month ({year})",
+        plot = df_agg_yr.plot(
+            title=f"{project} requests by Month ({year})",
             kind="bar",
             x="month",
             y=["count"],
+            legend=None,
         )
-    plt.show()
+        plot.set(xlabel="Month", ylabel="Requests")
+        plot.get_figure().savefig(f"e3sm_requests_by_month_{year}.png")
+        plt.show()
 
     return df_agg
 
@@ -166,13 +171,17 @@ def main():
         "data_type",
     ]
     df_requests = pd.DataFrame(columns=columns)
+    requests = []
 
     for log in tqdm(get_logs(root_dir)):
         for line in filter_lines(log):
             row = parse_log_line(line)
-            df_requests = df_requests.append(row, ignore_index=True)
+            requests.append(row)
 
-    df_agg_by_month = plot_downloads_by_month(df_requests, project="E3SM")
+    df_requests = pd.DataFrame(requests)
+
+    # Aggregation plots
+    df_agg_by_month = plot_requests_by_month(df_requests, project="E3SM")  # type: plt
 
 
 if __name__ == "__main__":
